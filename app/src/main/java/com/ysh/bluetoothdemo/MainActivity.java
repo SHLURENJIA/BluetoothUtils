@@ -1,11 +1,17 @@
 package com.ysh.bluetoothdemo;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BluetoothManager.OnReceiveMessageListener, BluetoothManager.OnSearchDevicesListener,
         BluetoothManager.OnSendMessageListener {
 
+    private static final int REQUEST_CODE_PERMISSION = 101;
 
     private Button mBtnOpen;
     private Button mBtnClose;
@@ -71,11 +78,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initListener();
 
         //TODO 动态权限
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            //大于23
+            int i = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if(i != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        REQUEST_CODE_PERMISSION);
+            }
+        }
 
         //开启服务器线程
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         mAcceptThread = new AcceptThread(adapter, BluetoothManager.SPP_UUID, mHandler);
         mAcceptThread.start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_CODE_PERMISSION:
+                //权限处理
+                break;
+            default:
+                break;
+        }
     }
 
     private void initView() {
