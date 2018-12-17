@@ -1,6 +1,5 @@
-package com.ysh.bluetooth;
+package com.ysh.bluetoothdemo;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;

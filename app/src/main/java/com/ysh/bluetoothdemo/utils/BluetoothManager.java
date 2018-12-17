@@ -1,4 +1,4 @@
-package com.ysh.bluetooth.bluetoothtools;
+package com.ysh.bluetoothdemo.utils;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  * 修改备注：
  */
 public class BluetoothManager {
-    private static final String SPP_UUID = "00001101-0000-1000-8000-00805F9B34FB";
+    public static final String SPP_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final int DEFAULT_BUFFER_SIZE = 1024;
     private static volatile BluetoothManager mBtManager;
     private Context mContext;
@@ -123,6 +123,10 @@ public class BluetoothManager {
         return true;
     }
 
+    public boolean isConnect() {
+        return mSocket != null && mSocket.isConnected();
+    }
+
     /**
      * 设置蓝牙设备可被检测
      * 默认120秒可见
@@ -186,10 +190,10 @@ public class BluetoothManager {
     }
 
     public void sendMessage(String s) {
-        if(mSendMessageListener == null){
+        if (mSendMessageListener == null) {
             throw new NullPointerException("OnSendMessageListener can not be null");
         }
-        if(mSocket.isConnected()){
+        if (mSocket.isConnected()) {
             try {
                 mOutputStream.write(s.getBytes());
                 mSendMessageListener.onSuccess();
@@ -199,6 +203,22 @@ public class BluetoothManager {
             }
         } else {
             mSendMessageListener.onFail("连接已断开");
+        }
+    }
+
+    public void closeDevice() {
+        mReadable = false;
+        mWritable = false;
+        if (mBtAdapter != null && mBtAdapter.isEnabled() && mSocket != null && mSocket.isConnected()) {
+            try {
+                mSocket.close();
+                mSocket = null;
+                if (mReadRunnable != null) {
+                    mReadRunnable = null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -221,15 +241,19 @@ public class BluetoothManager {
                 BluetoothDevice device = mBtAdapter.getRemoteDevice(mac);
                 mBtAdapter.cancelDiscovery();
                 mSocket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
-                mConnectListener.onConnectting();
                 mSocket.connect();
                 mInputStream = mSocket.getInputStream();
                 mOutputStream = mSocket.getOutputStream();
-                if(mReadRunnable == null){
+                if (mReadRunnable == null) {
                     mReadRunnable = new ReadRunnable();
                     mExecutorService.submit(mReadRunnable);
                 }
-                mConnectListener.onConnectSuccess(mac);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mConnectListener.onConnectSuccess(mac);
+                    }
+                });
             } catch (IOException e) {
                 e.printStackTrace();
                 mConnectListener.onConnectFailed(e.getMessage());
@@ -271,6 +295,7 @@ public class BluetoothManager {
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
+                    break;
                 }
             }
 
@@ -289,8 +314,6 @@ public class BluetoothManager {
      */
     public interface OnConnectListener {
         void onConnectStart();
-
-        void onConnectting();
 
         void onConnectFailed(String errorMessage);
 

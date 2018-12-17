@@ -1,10 +1,9 @@
-package com.ysh.bluetooth;
+package com.ysh.bluetoothdemo;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +23,6 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MsgHolder>
     public DeviceAdapter(Context context, List<BluetoothDevice> list){
         mContext = context;
         mDeviceList = list;
-
-
     }
 
     public void setDeviceClickListener(OnDeviceClickListener listener) {

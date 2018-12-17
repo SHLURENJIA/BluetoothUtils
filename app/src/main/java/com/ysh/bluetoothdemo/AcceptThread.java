@@ -1,18 +1,14 @@
-package com.ysh.bluetooth;
+package com.ysh.bluetoothdemo;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Keep;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 
@@ -37,23 +33,7 @@ public class AcceptThread extends Thread {
 
         try {
             tmp = adapter.listenUsingInsecureRfcommWithServiceRecord("Test Server", UUID.fromString(uuid));
-//            tmp = (BluetoothServerSocket) adapter.getClass().getMethod("listenUsingInsecureRfcommWithServiceRecord", new Class[]{String.class, UUID.class})
-//                    .invoke(adapter, "test", UUID.fromString(uuid));
-            //这个可以
-//            tmp = (BluetoothServerSocket) adapter.getClass().getMethod("listenUsingRfcommWithServiceRecord", new Class[]{String.class, UUID.class})
-//                    .invoke(adapter,"test",UUID.fromString(uuid));
-            //强行绑定端口
-//            tmp = (BluetoothServerSocket) adapter.getClass().getMethod("listenUsingRfcommOn", new Class[]{int.class})
-//                    .invoke(adapter, new Object[]{1});
-        }
-        /*catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } */
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -80,15 +60,13 @@ public class AcceptThread extends Thread {
                         bytes = mInputStream.read(buffer);
                         // Send the obtained bytes to the UI activity
                         String s = new String(buffer, 0, bytes);
-                        sendHandlerMsg(s);
+                        sendHandlerMsg("receive:" + s);
 
                     } catch (IOException e) {
                         break;
                     }
                 }
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -117,7 +95,7 @@ public class AcceptThread extends Thread {
         try {
             if (mOutputStream != null) {
                 mOutputStream.write(msg.getBytes());
-                sendHandlerMsg("服务器："+msg);
+                sendHandlerMsg("me：" + msg);
             }
         } catch (IOException e) {
             e.printStackTrace();
